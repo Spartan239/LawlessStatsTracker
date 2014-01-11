@@ -14,6 +14,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
@@ -27,6 +28,7 @@ public class main extends JPanel
 	/* Static variables */
 	String szFont = "Arial";
 	int iPort = 7777;
+	int iUDPPort = 55056;
 	int iTimeout = 5000;
 	int aPort[] = {iPort & 0xFF, iPort >> 8 & 0xFF}; //Port bytes for packet
 	
@@ -44,6 +46,25 @@ public class main extends JPanel
 	char szIPAddr[] = new char[4];
 	boolean socketConnected = false;
 	DatagramSocket socket; //Later used with UDPConnect & UDPDisconnect
+	
+	public String RetrieveLocalExtIP()
+	{
+		BufferedReader in;
+		try 
+		{
+			URL dip = new URL("http://checkip.amazonaws.com/");
+			in = new BufferedReader(new InputStreamReader(dip.openStream()));
+			String ip = in.readLine();
+			System.out.println(ip);
+			return ip;
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return "NULL";
+	}
 	
 	public String appendstr(String szOld, String szAppend)
 	{
@@ -100,11 +121,17 @@ public class main extends JPanel
 		String recieved = new String(packet.getData(), 0, packet.getLength());
 		return true;
 	}
+	public boolean DiscardBytes(String str)
+	{
+		//remove first 11 bytes of data (header)
+		return true;
+	}
 	main()
 	{
 		try 
 		{
 			InetAddress address = InetAddress.getByName(szServerIP);
+			InetAddress localaddr = InetAddress.getByName(RetrieveLocalExtIP());
 			szIP = "IP: "+ address.getHostAddress()+":7777";
 			szHostIP = address.getHostAddress();
 			
@@ -171,12 +198,12 @@ public class main extends JPanel
 			}
 			//UDPConnect();
 			//UDPDisconnect();
-			DatagramSocket dataSocket = new DatagramSocket(7777);
+			DatagramSocket dataSocket = new DatagramSocket(iPort);
 			dataSocket.setSoTimeout(iTimeout);
-			byte[] bytepacket = szPacket.getBytes(Charset.forName("UTF-8"));
-			byte[] buf = new byte[512];
+			byte[] bytepacket = szPacket.getBytes(Charset.forName("US-ASCII"));
+			byte[] buf = new byte[256];
 			DatagramPacket recpacket = new DatagramPacket(buf, buf.length);
-			DatagramPacket packet = new DatagramPacket(bytepacket, bytepacket.length, address, 7777);
+			DatagramPacket packet = new DatagramPacket(bytepacket, bytepacket.length, address, iPort);
 			packet.setData(bytepacket);
 			packet.setAddress(address);
 			packet.setPort(iPort);
@@ -189,7 +216,8 @@ public class main extends JPanel
 			System.out.println("Recieve Timeout: "+iTimeout+" milliseconds.");
 			dataSocket.send(packet);
 			System.out.println("Sent packet: "+ packet.getData());
-			dataSocket.receive(packet);
+			//recpacket.setPort(iPort);
+			dataSocket.receive(recpacket);
 			String recieved = new String(recpacket.getData(), 0, recpacket.getLength());
 			System.out.println("Recieved packet: "+ recieved);
 			dataSocket.close();
