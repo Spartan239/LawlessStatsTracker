@@ -5,17 +5,11 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 
 import javax.swing.JPanel;
@@ -29,19 +23,25 @@ public class main extends JPanel
 	String szFont = "Arial";
 	int iPort = 7777;
 	int iUDPPort = 55056;
-	int iTimeout = 5000;
+	int iTimeout = 10000;
 	int aPort[] = {iPort & 0xFF, iPort >> 8 & 0xFF}; //Port bytes for packet
 	
 	/* Dynamic variables */
 	int iWidth, iHeight; 
+	int iOnlinePlayers;
+	int iMaxPlayers;
+	boolean bPass;
 	String szHostIP;
 	String szName = "Lawless Roleplay";
 	String szIP = "IP: Unknown";
 	String szLoc = "Server location: Unknown";
 	String szPlayersOnline = "Players: Unknown";
+	String szServerVer = "Server version: Unknown";
 	String szServerIP = "samp.lawlessrp.com";
 	String szOnline = "Status: Offline";
+	String szPass = "Password: "+bPass;
 	String[] szServerInfo = new String[7]; 
+	String[] szRetPacket =  new String[100];
 	String szPacket = "SAMP";
 	char szIPAddr[] = new char[4];
 	boolean socketConnected = false;
@@ -121,10 +121,73 @@ public class main extends JPanel
 		String recieved = new String(packet.getData(), 0, packet.getLength());
 		return true;
 	}
-	public boolean DiscardBytes(String str)
+	public String[] DiscardBytes(String[] str)
 	{
 		//remove first 11 bytes of data (header)
-		return true;
+		String[] tmp = new String[str.length];
+		String ftmp = "";
+		for(int i = 0; i < str.length; i++)
+		{
+			if(i > 10)
+			{
+				tmp[i] = "";
+				tmp[i] = str[i];
+			}
+			else
+			{
+				str[i] = "";
+				tmp[i] = "";
+			}
+		}
+		for(int i = 0; i < tmp.length; i++)
+		{
+			ftmp = appendstr(ftmp, tmp[i]);
+		}
+		System.out.println("Final packet: "+ftmp);
+		return tmp;
+	}
+	public String[] SortRecievedPacket(String packet)
+	{
+		char c;
+		String[] str = new String[packet.length()];
+		//sorts the string into an array
+		for(int i = 0; i < packet.length(); i++)
+		{
+			c = packet.charAt(i);
+			str[i] = "";
+			str[i] = appendchar(str[i], c);
+		}
+		return str;
+	}
+	public void FinalProcess(String[] str)
+	{
+		//String[] merge = new String[str.length];
+		String string = "";
+		char c;
+		int pass = 0;
+		int[] players = new int[2];
+		int[] maxplayers = new int[2];
+		int j, k;
+		for(int i = 0; i < str.length; i++)
+		{
+			string = string+str[i];
+		}
+		pass = ascii(string.charAt(0));
+		if(pass == 1) bPass = true;
+		else bPass = false;
+		players[0] = ascii(string.charAt(1));
+		players[1] = ascii(string.charAt(2));
+		maxplayers[0] = ascii(string.charAt(3));
+		maxplayers[1] = ascii(string.charAt(4));
+		j = players[0];
+		k = players[1];
+		iOnlinePlayers = j + k;
+		//System.out.println("Pass: "+pass);
+		//System.out.println("Players: "+iOnlinePlayers);
+		j = maxplayers[0];
+		k = maxplayers[1];
+		iMaxPlayers = j + k;
+		//System.out.println("Max Players: "+iMaxPlayers);
 	}
 	main()
 	{
@@ -158,7 +221,6 @@ public class main extends JPanel
 					else
 					{
 						tmp = appendchar(tmp, j);
-					//	System.out.println(tmp);
 					}
 					len++;
 					if(len == szHostIP.length() && per != 4)
@@ -216,17 +278,15 @@ public class main extends JPanel
 			System.out.println("Recieve Timeout: "+iTimeout+" milliseconds.");
 			dataSocket.send(packet);
 			System.out.println("Sent packet: "+ packet.getData());
-			//recpacket.setPort(iPort);
 			dataSocket.receive(recpacket);
 			String recieved = new String(recpacket.getData(), 0, recpacket.getLength());
 			System.out.println("Recieved packet: "+ recieved);
 			dataSocket.close();
 			dataSocket.disconnect();
 			socketConnected = false;
-			int iOnline, iTotalPlayers;
-			iOnline = 0;
-			iTotalPlayers = 0;
-			szPlayersOnline = "Players: " + iOnline + "/" + iTotalPlayers;
+			szRetPacket = DiscardBytes(SortRecievedPacket(recieved));
+			FinalProcess(szRetPacket);
+			szPlayersOnline = "Players: " + iOnlinePlayers + "/" + iMaxPlayers;
 			szOnline = "Status: Online";
 		}
 		catch(Exception e)
@@ -249,7 +309,7 @@ public class main extends JPanel
 		g.drawString(szOnline, iWidth/15, iHeight/3);
 		g.drawString(szIP, iWidth/15, iHeight/2);
 		g.drawString(szPlayersOnline, iWidth/15, iHeight/2 + iHeight/6);
-		g.drawString(szLoc, iWidth/15, iHeight/2 + iHeight/3);
+		g.drawString(szPass, iWidth/15, iHeight/2 + iHeight/3);
 	}
 	public void stop()
 	{
