@@ -50,11 +50,12 @@ public class main extends JPanel
 		szServerIP = "samp.lawlessrp.com",
 		szOnline = "Status: Offline",
 		szPass = "Password: "+bPass,
-		szPacket = "SAMP";
+		szPacket = "SAMP",
+		szRetPacket = "";
 
 	String[]
-		szServerInfo = new String[7],
-		szRetPacket =  new String[100];
+		szServerInfo = new String[7];
+		//szRetPacket =  new String[100];
 
 	char szIPAddr[] = new char[4];
 
@@ -151,12 +152,12 @@ public class main extends JPanel
 			dataSocket.send(packet);
 			System.out.println("Sent packet: "+ packet.getData());
 			dataSocket.receive(recpacket);
-			String recieved = new String(recpacket.getData(), 0, recpacket.getLength());
-			System.out.println("Recieved packet: "+ recieved);
+			String received = new String(recpacket.getData(), 0, recpacket.getLength());
+			System.out.println("Received packet: "+ received);
 			dataSocket.close();
 			dataSocket.disconnect();
 			socketConnected = false;
-			szRetPacket = DiscardBytes(SortRecievedPacket(recieved));
+			szRetPacket = DiscardBytes(received);
 			FinalProcess(szRetPacket);
 			szPlayersOnline = "Players: " + iOnlinePlayers + "/" + iMaxPlayers;
 			szOnline = "Status: Online";
@@ -208,8 +209,10 @@ public class main extends JPanel
 
 	public String appendstr(String szOld, String szAppend)
 	{
-		String szNew;
-		szNew = szOld+szAppend;
+		String szNew = "";
+		if(!(szAppend.equals(null)|| szAppend.equals("null") || szAppend.isEmpty())) 
+			szNew = szOld+szAppend;
+		
 		return szNew;
 	}
 
@@ -278,7 +281,7 @@ public class main extends JPanel
 	{
 		if(socketConnected) {
 			socket.receive(packet);
-			String recieved = new String(packet.getData(), 0, packet.getLength());
+			String received = new String(packet.getData(), 0, packet.getLength());
 			return true;
 	}
 	else
@@ -286,70 +289,36 @@ public class main extends JPanel
 
 	}
 
-	public String[] DiscardBytes(String[] str)
+	public String DiscardBytes(String str)
 	{
-		//remove first 11 bytes of data (header)
-		String[] tmp = new String[str.length];
-		String ftmp = "";
-		for(int i = 0; i < str.length; i++)
-		{
-			if(i > 10)
-				tmp[i] = str[i];
-			else
-			{
-				str[i] = "";
-				tmp[i] = "";
-			}
-		}
-		for(int i = 0; i < tmp.length; i++)
-		{
-			ftmp = appendstr(ftmp, tmp[i]);
-		}
-		System.out.println("Final packet: "+ftmp);
-		return tmp;
+		String 
+			szFinal = "";
+		
+		szFinal = str.substring(10, str.length());
+		
+		System.out.println("Final packet: " + szFinal);
+		return szFinal;
 	}
 
-	public String[] SortRecievedPacket(String packet)
+	public void FinalProcess(String str)
 	{
-		char c;
-		String[] str = new String[packet.length()];
-		//sorts the string into an array
-		for(int i = 0; i < packet.length(); i++)
-		{
-			c = packet.charAt(i);
-			str[i] = appendchar(str[i], c);
-		}
-		return str;
-	}
-	public void FinalProcess(String[] str)
-	{
-		//String[] merge = new String[str.length];
-		String string = "";
-		char c;
 		int pass = 0;
 		int[]
 			players = new int[2],
 			maxplayers = new int[2];
 		int j, k;
 
-		for(int i = 0; i < str.length; i++)
-			string = string+str[i];
-
-		pass = ascii(string.charAt(0));
+		pass = ascii(str.charAt(0));
 		if(pass == 1) bPass = true;
 		else bPass = false;
-		players[0] = ascii(string.charAt(1));
-		players[1] = ascii(string.charAt(2));
-		maxplayers[0] = ascii(string.charAt(3));
-		maxplayers[1] = ascii(string.charAt(4));
-		j = players[0];
-		k = players[1];
-		iOnlinePlayers = j + k;
+		players[0] = ascii(str.charAt(1));
+		players[1] = ascii(str.charAt(2));
+		maxplayers[0] = ascii(str.charAt(3));
+		maxplayers[1] = ascii(str.charAt(4));
+		iOnlinePlayers = players[0] + players[1];
 		//System.out.println("Pass: "+pass);
 		//System.out.println("Players: "+iOnlinePlayers);
-		j = maxplayers[0];
-		k = maxplayers[1];
-		iMaxPlayers = j + k;
+		iMaxPlayers = maxplayers[0] + maxplayers[1];
 		//System.out.println("Max Players: "+iMaxPlayers);
 	}
 

@@ -2,7 +2,7 @@ package lillyramcharan.blacksirrah239.tracker;
 
 import javax.swing.JApplet;
 /**
- * @author Lilly X Ramcharan
+ * @author Jackson Harris
  *
  */
 public class launch extends JApplet
