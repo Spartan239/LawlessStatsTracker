@@ -167,6 +167,7 @@ public class main extends JPanel
 			e.printStackTrace();
 		}
 	}
+	
 	public void start()
 	{
 	}
@@ -183,11 +184,12 @@ public class main extends JPanel
 		g.drawString(szIP, iWidth/15, iHeight/2);
 		g.drawString(szPlayersOnline, iWidth/15, iHeight/2 + iHeight/6);
 		g.drawString(szPass, iWidth/15, iHeight/2 + iHeight/3);
+		System.out.println("X,Y: "+ iWidth + "," +iHeight);
 	}
 	public void stop()
 	{
 	}
-
+	
 	public String RetrieveLocalExtIP()
 	{
 		BufferedReader in;
