@@ -17,194 +17,66 @@ import javax.swing.JPanel;
 public class main extends JPanel
 {
 	private static final long serialVersionUID = 1L;
-	
-	
-	/* Static variables */
-	String szFont = "Arial";
-	int iPort = 7777;
-	int iUDPPort = 55056;
-	int iTimeout = 10000;
-	int aPort[] = {iPort & 0xFF, iPort >> 8 & 0xFF}; //Port bytes for packet
-	
-	/* Dynamic variables */
-	int iWidth, iHeight; 
-	int iOnlinePlayers;
-	int iMaxPlayers;
-	boolean bPass;
-	String szHostIP;
-	String szName = "Lawless Roleplay";
-	String szIP = "IP: Unknown";
-	String szLoc = "Server location: Unknown";
-	String szPlayersOnline = "Players: Unknown";
-	String szServerVer = "Server version: Unknown";
-	String szServerIP = "samp.lawlessrp.com";
-	String szOnline = "Status: Offline";
-	String szPass = "Password: "+bPass;
-	String[] szServerInfo = new String[7]; 
-	String[] szRetPacket =  new String[100];
-	String szPacket = "SAMP";
-	char szIPAddr[] = new char[4];
-	boolean socketConnected = false;
-	DatagramSocket socket; //Later used with UDPConnect & UDPDisconnect
-	
-	public String RetrieveLocalExtIP()
-	{
-		BufferedReader in;
-		try 
-		{
-			URL dip = new URL("http://checkip.amazonaws.com/");
-			in = new BufferedReader(new InputStreamReader(dip.openStream()));
-			String ip = in.readLine();
-			System.out.println(ip);
-			return ip;
-		} 
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 
-		return "NULL";
-	}
-	
-	public String appendstr(String szOld, String szAppend)
-	{
-		String szNew;
-		szNew = szOld+szAppend;
-		return szNew;
-	}
-	public String appendchar(String szOld, char szAppend)
-	{
-		String szNew;
-		szNew = szOld+szAppend;
-		return szNew;
-	}
-	public int ascii(char c)
-	{
-		int i;
-		i = c;
-		return i;
-	}
-	public char ascii(int i)
-	{
-		char c;
-		c = (char) i;
-		return c;
-	}
-	public boolean UDPConnect() throws IOException
-	{
-		socket = new DatagramSocket();
-		InetAddress address = InetAddress.getByName(szServerIP);
-		socket.connect(address, iPort);
-	        
-	    //byte[] bytepacket = szPacket.getBytes(Charset.forName("UTF-8"));
-		socketConnected = true;
-	    return true;
-	}
-	public boolean UDPDisconnect() throws IOException
-	{
-		socket.close();
-		socket.disconnect();
+
+	/* Static variables */
+	String
+		szFont = "Arial";
+
+	int
+		iPort = 7777,
+		iUDPPort = 55056,
+		iTimeout = 10000,
+		aPort[] = {iPort & 0xFF, iPort >> 8 & 0xFF}; //Port bytes for packet
+
+	/* Dynamic variables */
+	int
+		iWidth,
+		iHeight,
+		iOnlinePlayers,
+		iMaxPlayers;
+
+	boolean
+		bPass,
 		socketConnected = false;
-		return true;
-	}
-	public boolean UDPSendByte(byte[] data, InetAddress addr)
-	{
-		DatagramPacket packet = new DatagramPacket(data, data.length, addr, 7777);
-		packet.setData(data);
-		packet.setAddress(addr);
-		packet.setPort(iPort);
-		return true;
-	}
-	public boolean UDPRecieveByte(DatagramPacket packet) throws IOException
-	{
-		socket.receive(packet);
-		String recieved = new String(packet.getData(), 0, packet.getLength());
-		return true;
-	}
-	public String[] DiscardBytes(String[] str)
-	{
-		//remove first 11 bytes of data (header)
-		String[] tmp = new String[str.length];
-		String ftmp = "";
-		for(int i = 0; i < str.length; i++)
-		{
-			if(i > 10)
-			{
-				tmp[i] = "";
-				tmp[i] = str[i];
-			}
-			else
-			{
-				str[i] = "";
-				tmp[i] = "";
-			}
-		}
-		for(int i = 0; i < tmp.length; i++)
-		{
-			ftmp = appendstr(ftmp, tmp[i]);
-		}
-		System.out.println("Final packet: "+ftmp);
-		return tmp;
-	}
-	public String[] SortRecievedPacket(String packet)
-	{
-		char c;
-		String[] str = new String[packet.length()];
-		//sorts the string into an array
-		for(int i = 0; i < packet.length(); i++)
-		{
-			c = packet.charAt(i);
-			str[i] = "";
-			str[i] = appendchar(str[i], c);
-		}
-		return str;
-	}
-	public void FinalProcess(String[] str)
-	{
-		//String[] merge = new String[str.length];
-		String string = "";
-		char c;
-		int pass = 0;
-		int[] players = new int[2];
-		int[] maxplayers = new int[2];
-		int j, k;
-		for(int i = 0; i < str.length; i++)
-		{
-			string = string+str[i];
-		}
-		pass = ascii(string.charAt(0));
-		if(pass == 1) bPass = true;
-		else bPass = false;
-		players[0] = ascii(string.charAt(1));
-		players[1] = ascii(string.charAt(2));
-		maxplayers[0] = ascii(string.charAt(3));
-		maxplayers[1] = ascii(string.charAt(4));
-		j = players[0];
-		k = players[1];
-		iOnlinePlayers = j + k;
-		//System.out.println("Pass: "+pass);
-		//System.out.println("Players: "+iOnlinePlayers);
-		j = maxplayers[0];
-		k = maxplayers[1];
-		iMaxPlayers = j + k;
-		//System.out.println("Max Players: "+iMaxPlayers);
-	}
+
+	String
+		szHostIP,
+		szName = "Lawless Roleplay",
+		szIP = "IP: Unknown",
+		szLoc = "Server location: Unknown",
+		szPlayersOnline = "Players: Unknown",
+		szServerVer = "Server version: Unknown",
+		szServerIP = "samp.lawlessrp.com",
+		szOnline = "Status: Offline",
+		szPass = "Password: "+bPass,
+		szPacket = "SAMP";
+
+	String[]
+		szServerInfo = new String[7],
+		szRetPacket =  new String[100];
+
+	char szIPAddr[] = new char[4];
+
+	DatagramSocket socket; //Later used with UDPConnect & UDPDisconnect
+
 	main()
 	{
-		try 
+		try
 		{
 			InetAddress address = InetAddress.getByName(szServerIP);
 			InetAddress localaddr = InetAddress.getByName(RetrieveLocalExtIP());
 			szIP = "IP: "+ address.getHostAddress()+":7777";
 			szHostIP = address.getHostAddress();
-			
+
 			/* Converts the IP address into relative ASCII codes */
 			if(szHostIP.contains("."))
 			{
 				char j;
-				int k = 0;
-				int len = 0;
-				int per = 0;
+				int
+					k = 0,
+					len = 0,
+					per = 0;
 				String tmp = "";
 				String[] tmpstore = new String[4];
 				for(int i = 0; i < szHostIP.length(); i++)
@@ -313,6 +185,172 @@ public class main extends JPanel
 	}
 	public void stop()
 	{
+	}
+
+	public String RetrieveLocalExtIP()
+	{
+		BufferedReader in;
+		try
+		{
+			URL dip = new URL("http://checkip.amazonaws.com/");
+			in = new BufferedReader(new InputStreamReader(dip.openStream()));
+			String ip = in.readLine();
+			System.out.println(ip);
+			return ip;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return "NULL";
+	}
+
+	public String appendstr(String szOld, String szAppend)
+	{
+		String szNew;
+		szNew = szOld+szAppend;
+		return szNew;
+	}
+
+	public String appendchar(String szOld, char szAppend)
+	{
+		String szNew;
+		szNew = szOld+szAppend;
+		return szNew;
+	}
+
+	public int ascii(char c)
+	{
+		int i;
+		i = c;
+		return i;
+	}
+
+	public char ascii(int i)
+	{
+		char c;
+		c = (char) i;
+		return c;
+	}
+
+	public boolean UDPConnect() throws IOException
+	{
+		if(!socketConnected) {
+			socket = new DatagramSocket();
+			InetAddress address = InetAddress.getByName(szServerIP);
+			socket.connect(address, iPort);
+
+		    //byte[] bytepacket = szPacket.getBytes(Charset.forName("UTF-8"));
+			socketConnected = true;
+	    return true;
+		}
+		else
+			return false;
+	}
+
+	public boolean UDPDisconnect() throws IOException
+	{
+		if(socketConnected) {
+			socket.close();
+			socket.disconnect();
+			socketConnected = false;
+			return true;
+	}
+	else
+		return false;
+	}
+
+	public boolean UDPSendByte(byte[] data, InetAddress addr)
+	{
+			if(socketConnected) {
+				DatagramPacket packet = new DatagramPacket(data, data.length, addr, 7777);
+				packet.setData(data);
+				packet.setAddress(addr);
+				packet.setPort(iPort);
+				return true;
+		}
+		else
+			return false;
+	}
+
+	public boolean UDPRecieveByte(DatagramPacket packet) throws IOException
+	{
+		if(socketConnected) {
+			socket.receive(packet);
+			String recieved = new String(packet.getData(), 0, packet.getLength());
+			return true;
+	}
+	else
+		return false;
+
+	}
+
+	public String[] DiscardBytes(String[] str)
+	{
+		//remove first 11 bytes of data (header)
+		String[] tmp = new String[str.length];
+		String ftmp = "";
+		for(int i = 0; i < str.length; i++)
+		{
+			if(i > 10)
+				tmp[i] = str[i];
+			else
+			{
+				str[i] = "";
+				tmp[i] = "";
+			}
+		}
+		for(int i = 0; i < tmp.length; i++)
+		{
+			ftmp = appendstr(ftmp, tmp[i]);
+		}
+		System.out.println("Final packet: "+ftmp);
+		return tmp;
+	}
+
+	public String[] SortRecievedPacket(String packet)
+	{
+		char c;
+		String[] str = new String[packet.length()];
+		//sorts the string into an array
+		for(int i = 0; i < packet.length(); i++)
+		{
+			c = packet.charAt(i);
+			str[i] = appendchar(str[i], c);
+		}
+		return str;
+	}
+	public void FinalProcess(String[] str)
+	{
+		//String[] merge = new String[str.length];
+		String string = "";
+		char c;
+		int pass = 0;
+		int[]
+			players = new int[2],
+			maxplayers = new int[2];
+		int j, k;
+
+		for(int i = 0; i < str.length; i++)
+			string = string+str[i];
+
+		pass = ascii(string.charAt(0));
+		if(pass == 1) bPass = true;
+		else bPass = false;
+		players[0] = ascii(string.charAt(1));
+		players[1] = ascii(string.charAt(2));
+		maxplayers[0] = ascii(string.charAt(3));
+		maxplayers[1] = ascii(string.charAt(4));
+		j = players[0];
+		k = players[1];
+		iOnlinePlayers = j + k;
+		//System.out.println("Pass: "+pass);
+		//System.out.println("Players: "+iOnlinePlayers);
+		j = maxplayers[0];
+		k = maxplayers[1];
+		iMaxPlayers = j + k;
+		//System.out.println("Max Players: "+iMaxPlayers);
 	}
 
 }
